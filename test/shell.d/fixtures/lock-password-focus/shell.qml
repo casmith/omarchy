@@ -79,14 +79,17 @@ ShellRoot {
     repeat: true
     onTriggered: {
       try {
+        // Focus can only be judged while the window has keyboard focus; the
+        // compositor may move it away mid-test, so wait for it to come back.
+        if (!root.view.windowActive) {
+          root.waitedForWindow += 1
+          if (root.waitedForWindow < 25) return
+          root.fail("test window never became active")
+          root.finish()
+          return
+        }
+
         if (root.step === 0) {
-          if (!root.view.windowActive) {
-            root.waitedForWindow += 1
-            if (root.waitedForWindow < 25) return
-            root.fail("test window never became active")
-            root.finish()
-            return
-          }
           root.assertTrue(root.passwordInput.activeFocus, "password field has keyboard focus once the window is active")
           decoy.forceActiveFocus()
         } else if (root.step === 1) {
